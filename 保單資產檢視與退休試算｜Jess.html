@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>保單資產檢視與退休試算｜Jess</title>
+<style>
+:root{--bg:#0b1628;--surface:#13223a;--surface2:#1a2c48;--line:#27405f;--ink:#eef3fa;--ink2:#b4c2d6;--muted:#7f92ad;--gold:#d9b25a;--gold2:#f0d28a;--good:#3fbf8a;--bad:#e46a7a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:1080px;margin:0 auto;padding:16px 14px 60px}
+header{border-bottom:1px solid var(--line);padding:6px 0 14px;margin-bottom:6px}
+.eyebrow{color:var(--gold);font-weight:800;letter-spacing:.12em;font-size:12px}
+h1{font-size:22px;margin:4px 0 6px;font-weight:900}
+h2{font-size:17px;margin:28px 0 10px;font-weight:900;display:flex;align-items:center;gap:8px}
+h2::before{content:"";width:4px;height:18px;background:var(--gold);border-radius:2px;flex:none}
+h3{font-size:14px;margin:0 0 8px;font-weight:900}
+.sub{color:var(--ink2);font-size:13px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;position:relative;overflow:hidden}
+.card .bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.nm{font-size:12px;color:var(--muted);font-weight:800}
+.tt{font-size:14px;font-weight:900;margin-bottom:6px}
+.big{font-size:26px;font-weight:900;line-height:1.15}
+.big small{font-size:13px;color:var(--ink2);font-weight:700}
+.kv{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2);margin-top:5px;gap:8px}
+.kv b{color:var(--ink);font-weight:800;text-align:right}
+.tag{display:inline-block;font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;margin-top:6px}
+.tag.ok{background:rgba(63,191,138,.16);color:var(--good)}.tag.no{background:rgba(228,106,122,.16);color:var(--bad)}.tag.gd{background:rgba(217,178,90,.16);color:var(--gold2)}
+.ok{color:var(--good);font-weight:800}.no{color:var(--bad);font-weight:800}.mut{color:var(--muted)}
+.ctl-row{display:flex;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+.ctl{display:flex;flex-direction:column;gap:4px}
+.ctl label{font-size:11px;color:var(--muted);font-weight:700}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:2px}
+.seg button{background:none;border:0;color:var(--ink2);font:inherit;font-size:13px;font-weight:700;padding:6px 10px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--gold);color:#1b1404}
+.insight{border-left:4px solid var(--gold);background:linear-gradient(90deg,rgba(217,178,90,.12),transparent);padding:12px 14px;border-radius:8px;font-size:14px}
+.insight ul{margin:6px 0 0;padding-left:18px}.insight li{margin:5px 0}
+.tbl-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{background:var(--surface2);color:var(--ink2);font-weight:800;font-size:12px;position:sticky;top:0;z-index:1}
+td:first-child,th:first-child{text-align:left}
+td.note{text-align:left;white-space:normal;min-width:220px;color:var(--ink2);font-size:12px}
+tr.hl td{background:rgba(217,178,90,.10)}
+tr.be td{background:rgba(63,191,138,.10)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink2);margin-bottom:8px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.chart-box{position:relative;height:320px}
+canvas{width:100%;height:100%;display:block}
+.tip{position:absolute;pointer-events:none;background:#0a1322;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;min-width:170px;display:none;box-shadow:0 6px 20px rgba(0,0,0,.4);z-index:5}
+.tip .h{font-weight:900;color:var(--gold2);margin-bottom:4px}.tip .r{display:flex;justify-content:space-between;gap:12px}
+.note-list{font-size:12.5px;color:var(--ink2)}.note-list li{margin:5px 0}
+.alert{border:1px solid rgba(228,106,122,.45);background:rgba(228,106,122,.08);border-radius:12px;padding:12px 14px;font-size:13.5px}
+.foot{margin-top:30px;color:var(--muted);font-size:11.5px;border-top:1px solid var(--line);padding-top:12px}
+@media (max-width:560px){h1{font-size:19px}.big{font-size:23px}.seg button{padding:6px 8px;font-size:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">POLICY REVIEW & RETIREMENT PLAN</div>
+  <h1>保單資產檢視與退休試算</h1>
+  <div class="sub">Jess・女・民國 79 年 7 月 13 日生，現年 36 歲｜試算日期 115/11/07｜單位：美元</div>
+</header>
+
+<h2>目前持有的兩組保單</h2>
+<div class="grid" id="nowCards"></div>
+<div class="sub" style="margin-top:8px">「大水庫」是用躉繳的利率變動型保單（全球人壽）每年提領，去繳分紅保單（保誠）的保費。早期價值低於已繳金額是正常的：躉繳保單第 1 年有解約費用，分紅保單前幾年的解約金也比較低，要到第 6～8 年後才明顯拉開。</div>
+
+<h2>重點結論</h2>
+<div class="insight" id="insight"></div>
+
+
+<h2>資產成長：累計自付 vs 保單價值</h2>
+<div class="ctl-row"><div class="ctl"><label>顯示</label><div class="seg" id="segG"></div></div></div>
+<div class="panel">
+  <div class="legend" id="lgG"></div>
+  <div class="chart-box"><canvas id="cG"></canvas><div class="tip" id="tG"></div></div>
+  <div class="sub" style="margin-top:6px">保單價值＝當年度末可領取解約金總和（分紅保單：保證解約金＋假設中分紅；利變型：保單價值準備金依宣告利率滾存）。綠色虛線是其中「保證」的部分。</div>
+</div>
+<div class="grid" style="margin-top:10px" id="milestones"></div>
+
+<h2>退休提領試算</h2>
+<div class="ctl-row">
+  <div class="ctl"><label>退休年齡（開始提領）</label><div class="seg" id="segR"></div></div>
+  <div class="ctl"><label>提領方式</label><div class="seg" id="segS"></div></div>
+  <div class="ctl"><label>目標支撐到</label><div class="seg" id="segT"></div></div>
+</div>
+<div class="ctl-row">
+  <div class="ctl"><label>ETF 對照：景氣循環大跌</label><div class="seg" id="segX"></div></div>
+  <div class="ctl xopt"><label>跌幅</label><div class="seg" id="segD"></div></div>
+  <div class="ctl xopt"><label>週期</label><div class="seg" id="segP"></div></div>
+  <div class="ctl xopt"><label>第一次大跌</label><div class="seg" id="segF"></div></div>
+</div>
+<div class="grid" id="retCards"></div>
+<div class="panel" style="margin-top:10px">
+  <div class="legend" id="lgR"></div>
+  <div class="chart-box"><canvas id="cR"></canvas><div class="tip" id="tR"></div></div>
+  <div class="sub" style="margin-top:6px">ETF 對照：把客戶實際自己掏出的每一筆錢（含兩張躉繳、自付保費、大水庫不足時補的錢），在同一年改買 ETF，退休後用同樣的方式提領。金色虛線＝退休年齡；紅色帶＝大跌年。</div>
+</div>
+
+<h2>逐年明細</h2>
+<div class="ctl-row"><div class="ctl"><label>方案</label><div class="seg" id="segW"></div></div></div>
+<div class="tbl-wrap" style="max-height:520px"><table id="detail"></table></div>
+
+<h2>試算假設與注意事項</h2>
+<div class="panel"><ul class="note-list">
+  <li><b>年齡</b>：以「民國年 − 79」計算（當年生日後的實足年齡），可能和建議書上的投保年齡差 1 歲。</li>
+  <li><b>方案一</b>：112/12/19 投保全球人壽「非常美」利率變動型美元終身壽險（躉繳 38,065），搭配保誠「鑫利達」外幣終身壽險（定額給付型，年繳 10,000 × 6 年，保額 126,265）。鑫利達第 1、3 年由客戶自付；第 2 年（113/12）從非常美部分解約（保價金減少 11,112）；第 4～6 年（115/12～117/12）預計從非常美提領，不足由客戶補。</li>
+  <li><b>方案二</b>：115/2/24 投保全球人壽「美鑫恆盈」利率變動型美元終身壽險（躉繳 20,398），搭配保誠「新美康滿利」（年繳 10,101 × 3 年）。第 1 年客戶自付；第 2、3 年（116/2、117/2）從美鑫恆盈提領，不足由客戶補。</li>
+  <li><b>利變型保單</b>：非常美依目前宣告利率 4.1% 滾算（已含增值回饋分享金）；美鑫恆盈依建議書假設 4.30%。部分解約都在保單週年、增值回饋入帳後才進行，費用依建議書第 2～5 年解約金比例約 1% 計算，第 6 年起為 0。宣告利率每月調整，非保證。</li>
+  <li><b>非常美現值</b>：以 App 顯示 114 年度期初保價金 25,349 為基準，依 4.1% 滾算（今年約 930 的增值金已包含在內）。</li>
+  <li><b>分紅保單</b>：採建議書「假設中分紅」的可領取解約金總和。紅利非保證；鑫利達建議書顯示到 90 歲，本表也算到 90 歲。</li>
+  <li><b>退休提領</b>：兩組保單合計提領，依各保單價值按比例部分解約，提領後各保單按比例縮小，之後依建議書數字接續成長。每年於保單週年日提領（方案一 12 月、方案二 2 月，以同一民國年合併計算）。</li>
+  <li><b>ETF 對照</b>：以年化 7%（樂觀）與 5%（保守）計算，未計匯率與交易成本。實際上 0050 在 113～114 年漲幅遠高於 7%，若用實際走勢回測，ETF 過去三年會更好；但未來報酬無法保證，退休初期遇到大跌（報酬順序風險）會明顯縮短可提領年數。</li>
+  <li><b>景氣循環大跌</b>：從「第一次大跌」那年起每 8 或 10 年跌一次，回升年的報酬調高，讓每個循環的平均仍等於 7%／5%。保單依建議書數字，不受大跌影響。</li>
+</ul></div>
+<div class="foot">本試算僅供規劃討論參考，非保證收益。實際給付以保險公司要保書、保單條款、保單價值通知及正式試算為準；投資有風險，過去績效不代表未來表現。</div>
+</div>
+
+<script>
+// ===== 客戶：女，民國 79/07/13 生。以「民國年」為時間軸，年齡＝民國年−79 =====
+// 鑫利達（保誠，年繳 10,000 × 6 年，112/12 投保）：B+D 可領取解約金總和 / B 保證解約金，第 t 保單年度末 = 民國 112+t 年 12 月
+const XLD_T = [2652,6818,11111,16667,23990,32703,34204,62660,65939,69440,72435,75658,78860,82314,85886,89453,93270,97351,101438,105663,109827,114262,118830,123413,128279,133282,138432,143871,149343,154968,160701,166577,172609,178812,185282,191792,198566,205379,212456,219814,227140,234480,242067,249930,257798,265792,274039,282412,290909,299507,308069,316720,325630,334494,343617,352691,362023,371455];
+const XLD_G = [2652,6818,11111,16667,23990,32703,33334,33965,34597,35354,35986,36743,37374,38132,38890,39521,40279,41162,41920,42678,43435,44319,45203,45960,46844,47728,48612,49622,50506,51390,52400,53410,54420,55430,56567,57577,58713,59723,60860,62122,63385,64521,65784,67173,68436,69698,71087,72476,73865,75254,76643,78032,79547,80936,82451,83840,85355,86870];
+// 新美康滿利（保誠，年繳 10,101 × 3 年，115/2 投保）：B+G+H / B，第 t 保單年度末 = 民國 115+t 年 2 月
+const XMK_T = [4258,9935,15770,17190,19792,35211,36965,38429,40002,41607,43360,45042,46845,48759,50838,53604,55808,58210,60738,63267,65890,68585,71407,74328,77343,80520,83869,87346,91006,94786,98787,102994,107386,111843,116461,121429,126571,131946,137519,144935,151521,158482,165680,173229,181223,189329,198117,207435,217068,226756,236926,247482,258462,269974,281970,294605,307688,321826,335752,350376];
+const XMK_G = [4258,9935,15770,17190,19792,22433,22946,23458,23971,24484,24996,25548,26100,26691,27283,27874,28466,29096,29727,30358,31028,31699,32408,33118,33828,34577,35365,36114,36903,37731,38559,39387,40254,41121,41989,42935,43881,44867,45852,46878,47942,48967,50071,51175,52279,53422,54566,55748,56971,58193,59415,60677,61938,63239,64540,65999,67497,68996,70573,72150];
+
+const BIRTH = 79, Y0 = 112, YEND = 169;      // 顯示到 90 歲
+const FGD_RATE = 0.041, FJD_RATE = 0.043;   // 建議書宣告利率假設
+const SCN = { cycle:false, drop:0.40, period:10, first:115, etfR:0.07, jdFee:false };
+
+function isCrash(Y){ return SCN.cycle && Y>=SCN.first && (Y-SCN.first)%SCN.period===0; }
+function normalRet(r){ const N=SCN.period,d=SCN.drop; return Math.pow(Math.pow(1+r,N)/(1-d),1/(N-1))-1; }
+function etfRet(Y){ const r=SCN.etfR; if(!SCN.cycle||Y<SCN.first) return r; return isCrash(Y)?-SCN.drop:normalRet(r); }
+
+function wdAmount(scheme, age){
+  if (scheme==='flat') return SCN.flatAmt||6000;
+  return age>=65?10000: age>=60?8000:6000;
+}
+
+// 保單組合模擬（which: 'p1' | 'p2' | 'both'）
+function simPolicy(which, R, scheme){
+  const use1 = which!=='p2', use2 = which!=='p1';
+  let fgd=0, fjd=0, f1=1, f2=1, cash=0, depleted=null, totWd=0;
+  const rows=[];
+  for (let Y=Y0; Y<=YEND; Y++){
+    const age=Y-BIRTH; let pay=0, note=[];
+    const t1=Y-112, t2=Y-115;
+    // ---- 方案一：非常美＋鑫利達（12 月）----
+    if (use1){
+      if (Y===112){ pay+=38065+10000; note.push('躉繳非常美 38,065＋鑫利達第1年 10,000'); }
+      else if (Y===113){ fgd=36461-11112; note.push('非常美部分解約，保價金減少 11,112，繳鑫利達第2年'); }
+      else if (Y===114){ fgd*=1+FGD_RATE; pay+=10000; note.push('鑫利達第3年 客戶自付'); }
+      else if (Y>=115 && Y<=117){
+        fgd*=1+FGD_RATE; const net=Math.min(10000, fgd*0.99); fgd-=net/0.99; if(fgd<1) fgd=0;
+        const short=10000-net; pay+=short; note.push(`非常美提領 ${Math.round(net).toLocaleString()} 繳鑫利達第${Y-111}年`+(short>1?`，客戶補 ${Math.round(short).toLocaleString()}`:''));
+      } else fgd*=1+FGD_RATE;
+    }
+    // ---- 方案二：美鑫恆盈＋新美康滿利（2 月）----
+    if (use2){
+      if (Y===115){ fjd=20398; pay+=20398+10101; note.push('躉繳美鑫恆盈 20,398＋新美康滿利第1年 10,101'); }
+      else if (Y===116){ fjd=19694; const fee=SCN.jdFee?0.90:0.99; const net=Math.min(10101,fjd*fee); fjd-=net/fee; if(fjd<1)fjd=0; const s=10101-net; pay+=s; note.push(`美鑫恆盈提領 ${Math.round(net).toLocaleString()} 繳新美康滿利第2年（增值回饋入帳後再部分解約）`+(s>1?`，客戶補 ${Math.round(s).toLocaleString()}`:'')); }
+      else if (Y===117){ fjd*=1+FJD_RATE; const net=Math.min(10101,fjd*0.99); fjd-=net/0.99; if(fjd<1)fjd=0; const s=10101-net; pay+=s; note.push(`美鑫恆盈提領 ${Math.round(net).toLocaleString()} 繳新美康滿利第3年`+(s>1?`，客戶補 ${Math.round(s).toLocaleString()}`:'')); }
+      else if (Y>117) fjd*=1+FJD_RATE;
+    }
+    cash+=pay;
+    const xld = use1 && t1>=1 ? XLD_T[Math.min(t1,XLD_T.length)-1]*f1 : 0;
+    const xmk = use2 && t2>=1 ? XMK_T[Math.min(t2,XMK_T.length)-1]*f2 : 0;
+    let wd=0;
+    if (age>=R && depleted===null){
+      const W=wdAmount(scheme, age); const pool=xld+xmk+fgd+fjd;
+      if (pool>=W-0.01){ const q=1-W/pool; f1*=q; f2*=q; fgd*=q; fjd*=q; wd=W; }
+      else { wd=Math.max(pool,0); f1=0;f2=0;fgd=0;fjd=0; depleted=age; }
+      totWd+=wd;
+    }
+    const xldA = use1 && t1>=1 ? XLD_T[Math.min(t1,XLD_T.length)-1]*f1 : 0;
+    const xmkA = use2 && t2>=1 ? XMK_T[Math.min(t2,XMK_T.length)-1]*f2 : 0;
+    const gtd = (use1&&t1>=1?XLD_G[Math.min(t1,XLD_G.length)-1]*f1:0) + (use2&&t2>=1?XMK_G[Math.min(t2,XMK_G.length)-1]*f2:0);
+    rows.push({Y, age, pay, cash, wd, note:note.join('；'), fgd, fjd, xld:xldA, xmk:xmkA, gtd: gtd+fgd+fjd,
+               total: xldA+xmkA+fgd+fjd});
+  }
+  return {rows, depleted, totWd, cash: rows[rows.length-1].cash};
+}
+
+// 同樣的自付現金改買 ETF
+function simETF(which, R, scheme){
+  const base = simPolicy(which, 999, scheme); // 取得自付現金流（不提領）
+  let v=0, depleted=null, totWd=0; const rows=[];
+  for (const b of base.rows){
+    v += b.pay; v *= 1+etfRet(b.Y);
+    let wd=0;
+    if (b.age>=R && depleted===null){ const W=wdAmount(scheme,b.age); if(v>=W-0.01){v-=W;wd=W;} else {wd=Math.max(v,0);v=0;depleted=b.age;} totWd+=wd; }
+    rows.push({Y:b.Y, age:b.age, pay:b.pay, cash:b.cash, wd, total:v, crash:isCrash(b.Y)});
+  }
+  return {rows, depleted, totWd, cash: base.cash};
+}
+
+
+
+const C={p1:'#B88A22',p2:'#3F8AD6',both:'#22A889',cash:'#9aa6b8',gtd:'#3fbf8a',pol:'#22A889',e7:'#9C74DE',e5:'#D46A3A'};
+const state={G:'both',R:55,S:'step',T:90,X:'off',D:0.4,P:10,F:'now',W:'both'};
+const $=id=>document.getElementById(id);
+const usd=v=>'$'+Math.round(v).toLocaleString();
+function seg(id,opts,key){const el=$(id);el.innerHTML=opts.map(o=>`<button data-v="${o[0]}">${o[1]}</button>`).join('');
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{state[key]=isNaN(+b.dataset.v)?b.dataset.v:+b.dataset.v;render();});}
+seg('segG',[['both','兩組合計'],['p1','方案一'],['p2','方案二']],'G');
+seg('segR',[[50,'50 歲'],[55,'55 歲'],[60,'60 歲']],'R');
+seg('segS',[['step','6千→60歲8千→65歲1萬'],['flat','固定 6,000']],'S');
+seg('segT',[[80,'80'],[85,'85'],[90,'90']],'T');
+seg('segX',[['off','關（每年平均）'],['on','開']],'X');
+seg('segD',[[0.3,'-30%'],[0.4,'-40%'],[0.5,'-50%']],'D');
+seg('segP',[[8,'每 8 年'],[10,'每 10 年']],'P');
+seg('segF',[['now','現在(36歲)'],['R','退休當年'],[50,'50歲'],[55,'55歲']],'F');
+seg('segW',[['both','兩組合計'],['p1','方案一'],['p2','方案二']],'W');
+
+const lastAge=r=>r.depleted===null?'90+':String(r.depleted-1);
+const lastNum=r=>r.depleted===null?91:r.depleted-1;
+function irr(rows,Y){const row=rows.find(z=>z.Y===Y);if(!row)return null;let lo=-0.5,hi=0.5;
+  for(let i=0;i<80;i++){const r=(lo+hi)/2;let fv=0;for(const z of rows){if(z.Y>Y)break;fv+=z.pay*Math.pow(1+r,Y-z.Y);}fv>row.total?hi=r:lo=r;}return lo;}
+function maxFlat(kind,R,T){let lo=0,hi=200000;const sv=SCN.flatAmt;
+  for(let i=0;i<34;i++){const m=(lo+hi)/2;SCN.flatAmt=m;const r=kind==='pol'?simPolicy('both',R,'flat'):simETF('both',R,'flat');(lastNum(r)>=T)?lo=m:hi=m;}
+  SCN.flatAmt=sv;return lo;}
+
+function applyScn(){
+  SCN.cycle=state.X==='on';SCN.drop=state.D;SCN.period=state.P;
+  SCN.first=state.F==='now'?115:state.F==='R'?79+state.R:79+state.F;
+  document.querySelectorAll('.xopt').forEach(e=>e.style.opacity=SCN.cycle?1:.35);
+}
+function render(){
+  for(const [id,key] of [['segG','G'],['segR','R'],['segS','S'],['segT','T'],['segX','X'],['segD','D'],['segP','P'],['segF','F'],['segW','W']])
+    document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on',String(state[key])===b.dataset.v));
+  applyScn(); renderGrowth(); renderRet(); renderDetail();
+}
+
+// ---- 目前持有 ----
+(function(){
+  const fgdNow=25349*1.041, fgd115=fgdNow*1.041;
+  const cards=[
+    {c:C.p1,n:'方案一・大水庫',t:'全球 非常美（利變型）',rows:[['投保日','112/12/19'],['躉繳保費','$38,065'],['114 年度期初保價金（App）','$25,349'],['114/12 週年估計（4.1%，含增值金）',usd(fgdNow)],['115/12 週年估計（提領前）',usd(fgd115)]],tag:['gd','115/12 起連續 3 年提領繳鑫利達']},
+    {c:C.p1,n:'方案一',t:'保誠 鑫利達（年繳 10,000 × 6 年）',rows:[['投保日','112/12/17'],['已繳','第 1～3 年，共 $30,000'],['第 2 年末（114/12）解約金','$6,818'],['第 3 年末（115/12）解約金','$11,111'],['第 8 年末（119/12）','$62,660']],tag:['ok','第 8 年起分紅大幅加入']},
+    {c:C.p2,n:'方案二・大水庫',t:'全球 美鑫恆盈（利變型）',rows:[['投保日','115/2/24'],['躉繳保費','$20,398'],['目前保價金','約 $20,398'],['116/2 第 1 年末保價金','$19,694'],['宣告利率假設','4.30%']],tag:['gd','116/2、117/2 增值回饋入帳後部分解約']},
+    {c:C.p2,n:'方案二',t:'保誠 新美康滿利（年繳 10,101 × 3 年）',rows:[['投保年齡','36 歲'],['已繳','第 1 年 $10,101'],['116/2 第 1 年末解約金','$4,258'],['第 3 年末（118/2）','$15,770'],['第 6 年末（121/2）','$35,211']],tag:['ok','第 6 年起長青額外分紅加入']},
+  ];
+  $('nowCards').innerHTML=cards.map(k=>`<div class="card"><div class="bar" style="background:${k.c}"></div><div class="nm">${k.n}</div><div class="tt">${k.t}</div>${k.rows.map(r=>`<div class="kv"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}<span class="tag ${k.tag[0]}">${k.tag[1]}</span></div>`).join('');
+})();
+
+// ---- generic line chart ----
+function lineChart(cv,tip,series,opt){
+  const box=cv.parentElement,dpr=window.devicePixelRatio||1,W=box.clientWidth,H=box.clientHeight;
+  cv.width=W*dpr;cv.height=H*dpr;const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  const pad={l:56,r:12,t:10,b:28},Ys=series[0].pts.map(p=>p[0]);const x0=Ys[0],x1=Ys[Ys.length-1];
+  const maxV=Math.max(1,...series.flatMap(s=>s.pts.map(p=>p[1])))*1.06;
+  const X=y=>pad.l+(y-x0)/(x1-x0)*(W-pad.l-pad.r),Y=v=>pad.t+(1-v/maxV)*(H-pad.t-pad.b);
+  if(opt.bands){ctx.fillStyle='rgba(228,106,122,.22)';for(const b of opt.bands){const a=X(b-0.5),c=X(b+0.5);ctx.fillRect(Math.max(a,pad.l),pad.t,c-a,H-pad.t-pad.b);}}
+  ctx.font='11px -apple-system,sans-serif';ctx.fillStyle='#7f92ad';ctx.strokeStyle='#22385a';ctx.lineWidth=1;
+  const step=niceStep(maxV/5);
+  for(let v=0;v<=maxV;v+=step){ctx.beginPath();ctx.moveTo(pad.l,Y(v));ctx.lineTo(W-pad.r,Y(v));ctx.stroke();ctx.textAlign='right';ctx.fillText(v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?Math.round(v/1000)+'K':v,pad.l-6,Y(v)+4);}
+  ctx.textAlign='center';const st=W<600?10:5;
+  for(let y=x0;y<=x1;y++){const age=y-79;if(age%st===0)ctx.fillText(age+'歲',X(y),H-8);}
+  if(opt.vline){ctx.setLineDash([4,4]);ctx.strokeStyle='#d9b25a';ctx.beginPath();ctx.moveTo(X(opt.vline),pad.t);ctx.lineTo(X(opt.vline),H-pad.b);ctx.stroke();}
+  for(const s of series){ctx.strokeStyle=s.color;ctx.lineWidth=s.w||2;ctx.setLineDash(s.dash||[]);ctx.beginPath();
+    s.pts.forEach((p,i)=>{const x=X(p[0]),y=Y(p[1]);i?(s.stepped?(ctx.lineTo(x,Y(s.pts[i-1][1])),ctx.lineTo(x,y)):ctx.lineTo(x,y)):ctx.moveTo(x,y);});ctx.stroke();}
+  ctx.setLineDash([]);
+  cv._d={series,X,pad,W,x0,x1};
+  if(!cv._bound){cv._bound=true;const mv=e=>{const d=cv._d;const rc=cv.getBoundingClientRect();const cx=(e.touches?e.touches[0].clientX:e.clientX)-rc.left;
+      let y=Math.round(d.x0+(cx-d.pad.l)/(d.W-d.pad.l-d.pad.r)*(d.x1-d.x0));y=Math.max(d.x0,Math.min(d.x1,y));
+      tip.innerHTML=`<div class="h">民國 ${y} 年・${y-79} 歲</div>`+d.series.map(s=>{const p=s.pts.find(q=>q[0]===y);return `<div class="r"><span><span class="dot" style="background:${s.color}"></span>${s.name}</span><b>${p?usd(p[1]):'—'}</b></div>`}).join('');
+      tip.style.display='block';const l=d.X(y)+12;tip.style.left=(l+190>d.W?d.X(y)-200:l)+'px';tip.style.top='10px';};
+    cv.addEventListener('mousemove',mv);cv.addEventListener('touchstart',mv,{passive:true});cv.addEventListener('touchmove',mv,{passive:true});cv.addEventListener('mouseleave',()=>tip.style.display='none');}
+}
+function niceStep(x){const p=Math.pow(10,Math.floor(Math.log10(x)));const n=x/p;return (n<1.5?1:n<3?2:n<7?5:10)*p;}
+const legend=(id,arr)=>$(id).innerHTML=arr.map(s=>`<span>${s.dash?`<svg width="18" height="8" style="margin-right:5px;vertical-align:middle"><line x1="0" y1="4" x2="18" y2="4" stroke="${s.color}" stroke-width="2.5" stroke-dasharray="5 3"/></svg>`:`<span class="dot" style="background:${s.color}"></span>`}${s.name}</span>`).join('');
+
+// ---- 資產成長 ----
+function renderGrowth(){
+  const w=state.G, r=simPolicy(w,999,'step'), col=C[w];
+  const rows=r.rows.filter(z=>z.Y>=113);
+  const series=[
+    {name:'保單價值',color:col,pts:rows.map(z=>[z.Y,z.total]),w:2.5},
+    {name:'其中保證部分',color:C.gtd,dash:[6,4],pts:rows.map(z=>[z.Y,z.gtd])},
+    {name:'累計自付金額',color:C.cash,stepped:true,pts:rows.map(z=>[z.Y,z.cash])},
+  ];
+  legend('lgG',series);lineChart($('cG'),$('tG'),series,{});
+  const be=rows.find(z=>z.Y>117&&z.total>=z.cash);
+  const at=a=>rows.find(z=>z.age===a);
+  const ms=[['回本年度',be?`民國 ${be.Y} 年（${be.age} 歲）`:'—',be?`價值 ${usd(be.total)} ≥ 自付 ${usd(be.cash)}`:''],
+    ...[50,60,65,80].map(a=>{const z=at(a);const i=irr(r.rows,79+a);return [`${a} 歲時`,usd(z.total),`自付 ${usd(z.cash)} 的 ${(z.total/z.cash*100).toFixed(0)}%・年化 ${(i*100).toFixed(2)}%`]})];
+  $('milestones').innerHTML=ms.map(m=>`<div class="card"><div class="bar" style="background:${col}"></div><div class="nm">${m[0]}</div><div class="big" style="font-size:20px">${m[1]}</div><div class="sub" style="font-size:12px">${m[2]}</div></div>`).join('');
+}
+
+// ---- 退休 ----
+function renderRet(){
+  const {R,S,T}=state;
+  const pol=simPolicy('both',R,S);
+  SCN.etfR=0.07;const e7=simETF('both',R,S);const m7=maxFlat('etf',R,T);
+  SCN.etfR=0.05;const e5=simETF('both',R,S);const m5=maxFlat('etf',R,T);
+  const mp=maxFlat('pol',R,T);
+  const fb=(()=>{const a=simPolicy('both',R,'flat');return a;})();
+  const atR=(res)=>{const z=res.rows.find(q=>q.age===R);return z.total+z.wd;};
+  const at90=res=>res.rows[res.rows.length-1].total;
+  const cards=[[C.pol,'保單組合（方案一＋方案二）',pol,mp],[C.e7,'同樣的錢買 ETF（7%）',e7,m7],[C.e5,'同樣的錢買 ETF（5%）',e5,m5]];
+  $('retCards').innerHTML=cards.map(([c,t,res,mx])=>{const ok=lastNum(res)>=T;return `<div class="card"><div class="bar" style="background:${c}"></div><div class="tt">${t}</div>
+    <div class="big">${lastAge(res)}<small> 歲</small></div><div class="sub" style="font-size:11px">可足額領到的年齡</div>
+    <span class="tag ${ok?'ok':'no'}">${ok?'✓ 可撐到 '+T+' 歲':'✗ 撐不到 '+T+' 歲'}</span>
+    <div class="kv"><span>累計自付</span><b>${usd(res.cash)}</b></div>
+    <div class="kv"><span>${R} 歲退休時資產</span><b>${usd(atR(res))}</b></div>
+    <div class="kv"><span>累計領取</span><b>${usd(res.totWd)}</b></div>
+    <div class="kv"><span>90 歲剩餘</span><b>${res.depleted===null?usd(at90(res)):'—'}</b></div>
+    <div class="kv"><span>撐到 ${T} 歲最高「固定」年領</span><b>${usd(mx)}</b></div>
+    ${res===pol&&S==='step'&&lastNum(pol)<T?`<div class="kv"><span>改固定 6,000 可領到</span><b>${lastAge(fb)} 歲</b></div>`:''}</div>`;}).join('');
+  const bands=[];if(SCN.cycle)for(let y=SCN.first;y<=169;y+=SCN.period)bands.push(y);
+  const series=[{name:'保單組合',color:C.pol,pts:pol.rows.map(z=>[z.Y,z.total]),w:2.5},
+    {name:'ETF 7%',color:C.e7,pts:e7.rows.map(z=>[z.Y,z.total])},{name:'ETF 5%',color:C.e5,pts:e5.rows.map(z=>[z.Y,z.total])}];
+  legend('lgR',series);lineChart($('cR'),$('tR'),series,{vline:79+R,bands});
+  insight(pol,e7,e5,mp,m7,m5);
+}
+
+function insight(pol,e7,e5,mp,m7,m5){
+  const {R,S,T}=state;
+  const g=simPolicy('both',999,'step');const be=g.rows.find(z=>z.Y>117&&z.total>=z.cash);
+  const z65=g.rows.find(z=>z.age===65);
+  const sv=SCN.cycle;SCN.cycle=false;SCN.etfR=0.07;const s7=simETF('both',R,S);SCN.etfR=0.05;const s5=simETF('both',R,S);SCN.cycle=sv;
+  const crashTxt=SCN.cycle?`<li><b>大跌情境開啟</b>（${[...Array(10)].map((_,i)=>SCN.first+i*SCN.period).filter(y=>y<=169).map(y=>y-79).join('、')} 歲各跌 ${Math.round(SCN.drop*100)}%）：ETF 7% 可足額領到 ${lastAge(s7)}→${lastAge(e7)} 歲，ETF 5% ${lastAge(s5)}→${lastAge(e5)} 歲；保單組合不受影響，維持 ${lastAge(pol)} 歲。</li>`:'<li>打開「景氣循環大跌」，可以看 ETF 在退休當年遇到大跌時的結果；保單組合的數字不會變。</li>';
+  $('insight').innerHTML=`<ul>
+   <li><b>兩組保單合計</b>，客戶總共要自付約 <b>${usd(g.cash)}</b>（含 117 年大水庫不夠時補的約 ${usd(g.rows.find(z=>z.Y===117).pay)}），預計在<b>民國 ${be.Y} 年（${be.age} 歲）回本</b>，65 歲時價值約 <b>${usd(z65.total)}</b>，是自付金額的 ${(z65.total/z65.cash).toFixed(1)} 倍，年化約 ${(irr(g.rows,144)*100).toFixed(1)}%。</li>
+   <li>兩個大水庫（非常美、美鑫恆盈）到 117 年都會用完，之後的資產全部在兩張保誠分紅保單裡，其中保證部分 65 歲時約 ${usd(z65.gtd)}。</li>
+   <li><b>${R} 歲退休、${S==='step'?'每年 6,000 起逐步調高到 1 萬':'每年固定 6,000'}</b>：保單組合可以足額領到 <b>${lastAge(pol)} 歲</b>；若要穩穩撐到 ${T} 歲，每年固定最多可領約 <b>${usd(mp)}</b>。</li>
+   <li>同樣的錢改買 ETF，平均報酬 7% 時最多可領約 ${usd(m7)}、5% 時約 ${usd(m5)}，長期平均確實比較高。保單的優勢在於價值平穩、有保證部分、附身故保障，且退休時不必擔心剛好碰上大跌。</li>
+   ${crashTxt}
+  </ul>`;
+}
+
+// ---- 明細 ----
+function renderDetail(){
+  const w=state.W, r=simPolicy(w,state.R,state.S);
+  const be=r.rows.find(z=>z.Y>117&&z.total>=z.cash);
+  let h=`<tr><th>民國年</th><th>年齡</th><th>當年自付</th><th>累計自付</th>${w!=='p2'?'<th>非常美</th><th>鑫利達</th>':''}${w!=='p1'?'<th>美鑫恆盈</th><th>新美康滿利</th>':''}<th>提領</th><th>合計價值</th><th>保證部分</th><th>說明</th></tr>`;
+  for(const z of r.rows){const cls=z.age===state.R?'hl':(be&&z.Y===be.Y?'be':'');const d='<span class="mut">—</span>';
+    h+=`<tr class="${cls}"><td>${z.Y}</td><td>${z.age}</td><td>${z.pay>0.5?usd(z.pay):d}</td><td>${usd(z.cash)}</td>${w!=='p2'?`<td>${z.fgd>0.5?usd(z.fgd):d}</td><td>${z.xld>0.5?usd(z.xld):d}</td>`:''}${w!=='p1'?`<td>${z.fjd>0.5?usd(z.fjd):d}</td><td>${z.xmk>0.5?usd(z.xmk):d}</td>`:''}<td>${z.wd?usd(z.wd):d}</td><td><b>${z.Y===112?d:usd(z.total)}</b></td><td>${z.Y===112?d:usd(z.gtd)}</td><td class="note">${z.note||(be&&z.Y===be.Y?'✓ 回本':'')||(z.age===state.R?'開始退休提領':'')}</td></tr>`;}
+  $('detail').innerHTML=h;
+}
+window.addEventListener('resize',()=>{clearTimeout(window._rt);window._rt=setTimeout(render,150);});
+render();
+</script>
+</body>
+</html>
